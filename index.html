@@ -1,0 +1,751 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Calculator, ChefHat, Wrench, DollarSign, 
+  ShoppingBag, Coffee, Store, ChevronRight, 
+  ArrowLeft, Leaf, Smartphone, Shirt, Utensils,
+  Baby, Settings, CheckCircle2, Users, 
+  Megaphone, PieChart, TrendingUp, Share2, ClipboardList
+} from 'lucide-react';
+
+// --- DATA SUMBER LENGKAP (DIPERBARUI DENGAN DETAIL BISNIS) ---
+const categories = [
+  { id: 'micro', label: 'Micro (500rb - 1Jt)', min: 0, max: 1000000 },
+  { id: 'small', label: 'Kecil (5Jt - 10Jt)', min: 1000001, max: 10000000 },
+  { id: 'medium', label: 'Menengah (50Jt)', min: 10000001, max: 50000000 },
+];
+
+const businessData = [
+  // --- KATEGORI MICRO ---
+  {
+    id: 'jastip',
+    title: 'Jasa Titip (Jastip) Pasar',
+    category: 'micro',
+    icon: <ShoppingBag className="w-6 h-6 text-purple-600" />,
+    modal: 500000,
+    omzet: 3000000,
+    offerHighlight: "Belanja Pasar Segar Tanpa Perlu Bangun Pagi & Becek-becekan.",
+    desc: 'Solusi belanja harian. Modal tenaga & bensin.',
+    economics: {
+      unit: "Per Pelanggan",
+      price: "Rp 15.000 (Fee Jastip)",
+      hpp: "Rp 3.000 (Bensin/Plastik per drop)",
+      margin: "Rp 12.000 / pelanggan",
+      fixedCost: ["Kuota Internet", "Service Motor Rutin"],
+      variableCost: ["Bensin", "Kantong Belanja", "Parkir Pasar"]
+    },
+    marketing: [
+      "Share foto sayur segar HD di Story WA jam 7 pagi (bikin ngiler ibu-ibu).",
+      "Broadcast menu mingguan ke Grup RT/Komplek.",
+      "Berikan bonus 'Bumbu Dapur' untuk order pertama."
+    ],
+    operations: {
+      daily: "H-1: List pesanan -> Subuh: Belanja ke pasar induk -> Pagi: Sortir & Packing -> Jam 8-10: Pengantaran.",
+      finance: "Cash Flow Rule: Uang belanja nasabah HARUS dipisah dari uang pribadi. Fee jastip baru boleh diambil.",
+      hiring: "Awal: Sendiri (Founder operasional). Tahap Lanjut: Hire tetangga yang punya motor khusus untuk pengantaran (sistem bagi fee antar)."
+    }
+  },
+  {
+    id: 'shoes',
+    title: 'Laundry Sepatu Rumahan',
+    category: 'micro',
+    icon: <Settings className="w-6 h-6 text-blue-600" />,
+    modal: 500000,
+    omzet: 2500000,
+    offerHighlight: "Sepatu Lama Rasa Baru dalam 24 Jam.",
+    desc: 'Cuci sepatu teknik deep clean. Modal skill.',
+    economics: {
+      unit: "Per Pasang Sepatu",
+      price: "Rp 35.000 (Deep Clean)",
+      hpp: "Rp 5.000 (Sabun, Air, Listrik)",
+      margin: "Rp 30.000 / pasang",
+      fixedCost: ["Alat Sikat (Penyusutan)", "Rak Sepatu"],
+      variableCost: ["Cairan Cleaner", "Parfum Sepatu", "Silica Gel", "Plastik Zip"]
+    },
+    marketing: [
+      "Foto Before-After yang dramatis di Instagram/TikTok.",
+      "Promo: Cuci 5 Gratis 1.",
+      "Jemput bola: Tawarkan pick-up service ke kos-kosan mahasiswa."
+    ],
+    operations: {
+      daily: "Sortir bahan sepatu (Canvas/Suede/Leather) -> Dry Clean (Jangan rendam!) -> Angin-anginkan (No jemur matahari) -> Finishing.",
+      finance: "Sisihkan 20% profit untuk beli alat cleaner premium (upgrade aset).",
+      hiring: "Awal: Kerjakan sendiri. Stabil: Hire part-time mahasiswa untuk gosok sepatu (bayar per pasang)."
+    }
+  },
+  {
+    id: 'galon',
+    title: 'Antar Galon & Gas',
+    category: 'micro',
+    icon: <Store className="w-6 h-6 text-cyan-600" />,
+    modal: 500000,
+    omzet: 2000000,
+    offerHighlight: "Air Habis? Kami Datang dalam 15 Menit.",
+    desc: 'Penyelamat rumah tangga. Putaran uang sangat cepat.',
+    economics: {
+      unit: "Per Galon/Gas",
+      price: "Margin Rp 3.000 - Rp 5.000 per unit",
+      hpp: "Bensin (dianggap variable kecil jika rute efisien)",
+      margin: "Rp 4.000 rata-rata",
+      fixedCost: ["Service Motor", "Keranjang Motor"],
+      variableCost: ["Bensin"]
+    },
+    marketing: [
+      "Tempel stiker magnet kulkas 'Nomor Darurat Galon' di rumah warga.",
+      "Berikan kartu stempel: 10x beli gratis 1 galon isi ulang.",
+      "Pastikan respons WA < 2 menit."
+    ],
+    operations: {
+      daily: "Standby WA -> Order Masuk -> Angkut -> Pasang (Service Excellent).",
+      finance: "Cash Flow ketat! Uang modal galon harus langsung diputar lagi sorenya.",
+      hiring: "Awal: Sendiri. Stabil: Hire tenaga angkut lepas jika order > 30 galon/hari."
+    }
+  },
+  {
+    id: 'lontong',
+    title: 'Sarapan Lontong (PO)',
+    category: 'micro',
+    icon: <ChefHat className="w-6 h-6 text-orange-600" />,
+    modal: 500000,
+    omzet: 4500000,
+    offerHighlight: "Sarapan Premium Resep Warisan, Pasti Kebagian (PO).",
+    desc: 'Masakan rumah Zero Waste (Tanpa sisa terbuang).',
+    economics: {
+      unit: "Per Porsi",
+      price: "Rp 12.000",
+      hpp: "Rp 7.000 (Bahan Baku Lengkap)",
+      margin: "Rp 5.000 / porsi",
+      fixedCost: ["Gas", "Tenaga Masak"],
+      variableCost: ["Bahan Segar", "Kemasan/Mika", "Sendok Plastik"]
+    },
+    marketing: [
+      "Posting foto bahan mentah premium H-1 (Building Trust).",
+      "Testimoni tetangga di Story.",
+      "Sistem 'Limited Slot': Cuma bikin 30 porsi, siapa cepat dia dapat."
+    ],
+    operations: {
+      daily: "Kamis: Buka PO -> Jumat: Belanja -> Sabtu Subuh: Masak -> Jam 7: Ready.",
+      finance: "Keuntungan langsung dipisah. Jangan dipakai belanja sayur harian rumah tangga.",
+      hiring: "Awal: Sendiri + Keluarga. Stabil: Bayar tetangga untuk bantu kupas/potong bahan."
+    }
+  },
+
+  // --- KATEGORI KECIL (1-10 JUTA) ---
+  {
+    id: 'minuman',
+    title: 'Minuman Kekinian (Booth)',
+    category: 'small',
+    icon: <Coffee className="w-6 h-6 text-brown-600" />,
+    modal: 1000000,
+    omzet: 5000000,
+    offerHighlight: "Kesegaran Mewah Harga Kaki Lima.",
+    desc: 'Booth portable. Margin produk tinggi.',
+    economics: {
+      unit: "Per Cup Jumbo",
+      price: "Rp 8.000",
+      hpp: "Rp 3.500 (Cup, Bubuk, Es, Air, Sedotan)",
+      margin: "Rp 4.500 / cup",
+      fixedCost: ["Sewa Teras (jika ada)", "Listrik"],
+      variableCost: ["Bahan Baku", "Es Kristal"]
+    },
+    marketing: [
+      "Lokasi adalah marketing terbaik (dekat sekolah/lapangan).",
+      "Promo 'Jumat Berkah': Beli 2 Gratis 1.",
+      "Visual booth harus cerah dan bersih."
+    ],
+    operations: {
+      daily: "Siapkan biang gula & teh -> Buka booth -> Jaga kebersihan (lalat musuh utama).",
+      finance: "Sisihkan Rp 500/cup untuk tabungan ganti booth/banner baru nanti.",
+      hiring: "Awal: Jaga sendiri. Stabil (jual > 50 cup/hari): Hire anak lulusan SMA jaga booth."
+    }
+  },
+  {
+    id: 'ricebowl',
+    title: 'Rice Bowl Rumahan',
+    category: 'small',
+    icon: <Utensils className="w-6 h-6 text-red-600" />,
+    modal: 5000000,
+    omzet: 9000000,
+    offerHighlight: "Solusi Perut Kenyang, Praktis, Rasa Restoran.",
+    desc: 'Cloud kitchen. Fokus GoFood/GrabFood.',
+    economics: {
+      unit: "Per Bowl",
+      price: "Rp 25.000 (di App)",
+      hpp: "Rp 12.000 (Food Cost 40-50%)",
+      margin: "Rp 8.000 (setelah potong bagi hasil App 20%)",
+      fixedCost: ["Gas", "Internet (untuk terima order)"],
+      variableCost: ["Bahan Makanan", "Paper Bowl", "Stiker Logo"]
+    },
+    marketing: [
+      "Foto produk harus profesional (karena pembeli tidak lihat dapur).",
+      "Ikut program promo platform (Diskon Ongkir, Flash Sale).",
+      "Slip brosur/thank you card di setiap pesanan."
+    ],
+    operations: {
+      daily: "Mise en place (potong bahan) pagi hari -> Masak by order (max 10 menit/porsi).",
+      finance: "Cek laporan mingguan dari App. Awas boncos di promo.",
+      hiring: "Awal: Founder masak & admin. Stabil: Hire 1 helper dapur untuk persiapan bahan."
+    }
+  },
+  {
+    id: 'martabak',
+    title: 'Gerobak Martabak',
+    category: 'small',
+    icon: <ChefHat className="w-6 h-6 text-yellow-600" />,
+    modal: 5000000,
+    omzet: 12000000,
+    offerHighlight: "Manisnya Pas, Toppingnya Jujur (Gak Pelit).",
+    desc: 'Bisnis malam hari. High cash flow.',
+    economics: {
+      unit: "Per Loyang Biasa",
+      price: "Rp 20.000",
+      hpp: "Rp 9.000 (Adonan + Topping)",
+      margin: "Rp 11.000 / loyang",
+      fixedCost: ["Sewa Lapak", "Gas", "Lampu"],
+      variableCost: ["Tepung, Telur, Mentega, Keju/Coklat"]
+    },
+    marketing: [
+      "Aroma! Kipas aroma wangi mentega ke jalanan.",
+      "Varian menu unik (Red Velvet/Pandan) untuk menarik anak muda.",
+      "Daftarkan online food delivery."
+    ],
+    operations: {
+      daily: "Sore: Bikin adonan (resting) -> Malam: Jualan -> Tutup: Bersihkan loyang (Vital!).",
+      finance: "Hitung sisa bahan (telur/keju) tiap malam untuk kontrol HPP.",
+      hiring: "Awal: Founder masak. Stabil: Hire asisten untuk parut keju & packing."
+    }
+  },
+  {
+    id: 'muslimah',
+    title: 'Butik Muslimah Rumahan',
+    category: 'small',
+    icon: <Shirt className="w-6 h-6 text-purple-500" />,
+    modal: 5000000,
+    omzet: 8000000,
+    offerHighlight: "Cantik Syar'i Tanpa Bikin Dompet Nyeri.",
+    desc: 'Jualan via Live Streaming & WA Story.',
+    economics: {
+      unit: "Per Pcs Gamis",
+      price: "Rp 150.000",
+      hpp: "Rp 100.000 (Harga Grosir)",
+      margin: "Rp 50.000 / pcs",
+      fixedCost: ["Kuota Internet", "Ringlight/Manekin"],
+      variableCost: ["Plastik Packing", "Lakban", "Bonus Konektor Masker"]
+    },
+    marketing: [
+      "Live Sale rutin di FB/TikTok (Interaksi langsung).",
+      "Endorse tetangga/teman yang fotogenik.",
+      "Video detail bahan (zoom in) untuk build trust."
+    ],
+    operations: {
+      daily: "Pagi: Foto produk -> Siang: Reply Chat -> Sore: Packing & Kirim Ekspedisi.",
+      finance: "Putar modal cepat. Jangan stok barang mati (dead stock) terlalu lama, segera sale.",
+      hiring: "Awal: Sendiri. Stabil: Hire admin balas chat jika chat masuk > 50/hari."
+    }
+  },
+  {
+    id: 'warkop',
+    title: 'Warkop Indomie Upgrade',
+    category: 'small',
+    icon: <Coffee className="w-6 h-6 text-gray-700" />,
+    modal: 10000000,
+    omzet: 15000000,
+    offerHighlight: "Indomie Persis Bungkusnya + WiFi Kencang.",
+    desc: 'Tempat nongkrong sejuta umat. Upgrade kebersihan.',
+    economics: {
+      unit: "Indomie Telur",
+      price: "Rp 12.000",
+      hpp: "Rp 5.500 (Mie, Telur, Sayur, Gas)",
+      margin: "Rp 6.500",
+      fixedCost: ["WiFi (Wajib Kencang)", "Listrik", "Sewa"],
+      variableCost: ["Bahan Baku", "Es Batu"]
+    },
+    marketing: [
+      "Bikin menu 'Indomie Nyemek' yang viral.",
+      "Sediakan colokan listrik di setiap meja.",
+      "Adakan nobar (nonton bareng) bola/motoGP."
+    ],
+    operations: {
+      daily: "Belanja pasar -> Buka lapak -> Cleaning area berkala -> Tutup dini hari.",
+      finance: "Waspada 'Bon' (Utang) teman. Terapkan Cash Only atau QRIS.",
+      hiring: "Awal: Founder + 1 Teman. Stabil: Hire penjaga shift malam."
+    }
+  },
+  {
+    id: 'cucimotor',
+    title: 'Cuci Motor & Steam',
+    category: 'small',
+    icon: <Wrench className="w-6 h-6 text-blue-700" />,
+    modal: 10000000,
+    omzet: 9000000,
+    offerHighlight: "Bukan Cuma Semprot, Tapi Detail Sampai Sela Mesin.",
+    desc: 'Jasa kebersihan kendaraan. Repeat order tinggi.',
+    economics: {
+      unit: "Per Motor",
+      price: "Rp 15.000",
+      hpp: "Rp 2.000 (Sabun, Semir, Listrik)",
+      margin: "Rp 13.000 (Gross sebelum gaji karyawan)",
+      fixedCost: ["Sewa Tempat", "Penyusutan Mesin"],
+      variableCost: ["Sabun Salju", "Semir Ban"]
+    },
+    marketing: [
+      "Promo: Cuci 10x Gratis 1x.",
+      "Ruang tunggu nyaman (Ada kopi/WiFi).",
+      "Kasih finishing 'Semir Ban' gratis agar kinclong saat keluar."
+    ],
+    operations: {
+      daily: "Cek mesin steam & kompresor -> Briefing tukang cuci (SOP Kebersihan) -> Operasional.",
+      finance: "Kontrol penggunaan sabun (jangan boros). Gaji karyawan biasanya sistem bagi hasil (40:60).",
+      hiring: "Awal: 1 Tukang cuci berpengalaman. Founder bagian kasir & QC."
+    }
+  },
+
+  // --- KATEGORI MENENGAH (50 JUTA) ---
+  {
+    id: 'nasipadang',
+    title: 'Warung Nasi Padang',
+    category: 'medium',
+    icon: <ChefHat className="w-6 h-6 text-red-700" />,
+    modal: 50000000,
+    omzet: 45000000,
+    offerHighlight: "Rasa Otentik Minang, Gulai Kental, Sambal Nendang.",
+    desc: "Bisnis kuliner 'Evergreen'. Lokasi sangat menentukan.",
+    economics: {
+      unit: "Nasi Rendang",
+      price: "Rp 22.000",
+      hpp: "Rp 12.000 (Daging, Beras, Bumbu)",
+      margin: "Rp 10.000 / porsi",
+      fixedCost: ["Sewa Ruko", "Gaji Karyawan", "Listrik/Air"],
+      variableCost: ["Bahan Baku Harian (Sayur/Lauk)"]
+    },
+    marketing: [
+      "Display lauk yang menumpuk & menggoda selera (Psikologi lapar).",
+      "Terima pesanan nasi kotak untuk kantor/hajatan (Cash flow besar).",
+      "Konsistensi rasa adalah marketing terbaik."
+    ],
+    operations: {
+      daily: "Jam 4 Pagi: Masak Besar -> Jam 10: Display -> Jam 11-2: Rush Hour -> Sore: Bersih-bersih.",
+      finance: "Harian: Catat belanja pasar vs Omzet hari itu. Laba bersih nasi padang idealnya 20-30%.",
+      hiring: "Wajib ada: 1 Kepala Koki (Vital), 1 Asisten Dapur, 1 Pelayan/Kasir."
+    }
+  },
+  {
+    id: 'bengkel',
+    title: 'Bengkel Oli & Ban',
+    category: 'medium',
+    icon: <Wrench className="w-6 h-6 text-gray-800" />,
+    modal: 50000000,
+    omzet: 30000000,
+    offerHighlight: "Bengkel Jujur, Harga Transparan, Mekanik Handal.",
+    desc: 'Service ringan fast moving. Fokus kepercayaan.',
+    economics: {
+      unit: "Ganti Oli + Service",
+      price: "Jasa Rp 35rb + Margin Oli Rp 15rb",
+      hpp: "Jasa (Tenaga) + Modal Oli",
+      margin: "Rp 50.000 (Gross Profit per motor)",
+      fixedCost: ["Sewa Kios", "Gaji Mekanik"],
+      variableCost: ["Kain Lap Majun", "Bensin Kompresor"]
+    },
+    marketing: [
+      "Spanduk besar 'Ganti Oli Gratis Check Up Rem'.",
+      "Stiker bengkel di motor konsumen (Branding berjalan).",
+      "Edukasi pelanggan: 'Ini olinya asli pak, scan barcodenya'."
+    ],
+    operations: {
+      daily: "Buka -> Service -> Catat Sparepart keluar -> Tutup -> Audit stok oli.",
+      finance: "Stok Opname (Cek fisik barang) seminggu sekali. Rawan tuyul (barang hilang).",
+      hiring: "Awal: 1 Mekanik Senior (Leader) + 1 Helper. Founder di kasir/admin."
+    }
+  },
+  {
+    id: 'baby',
+    title: 'Toko Perlengkapan Bayi',
+    category: 'medium',
+    icon: <Baby className="w-6 h-6 text-blue-400" />,
+    modal: 50000000,
+    omzet: 35000000,
+    offerHighlight: "One Stop Shopping Kebutuhan Si Kecil & Bunda.",
+    desc: 'Retail barang kebutuhan pokok bayi.',
+    economics: {
+      unit: "Produk Retail",
+      price: "Margin rata-rata 15-25%",
+      hpp: "Harga Kulak Pabrik/Distributor",
+      margin: "Volume based (Untung dikit tapi kali banyak)",
+      fixedCost: ["Sewa Ruko", "Listrik AC", "Rak"],
+      variableCost: ["Plastik Belanja"]
+    },
+    marketing: [
+      "Paket Kado Lahiran (Hampers) ready stock.",
+      "Program Member: Kumpulkan poin belanja.",
+      "Lengkap! Jangan sampai pelanggan cari barang A tidak ada."
+    ],
+    operations: {
+      daily: "Display barang (FIFO - First In First Out) -> Layani pembeli -> Cek rak kosong.",
+      finance: "Pisahkan omzet popok/susu (margin tipis) dengan baju/mainan (margin tebal).",
+      hiring: "Awal: 1 Penjaga toko yang ramah & suka anak kecil. Founder manajemen stok."
+    }
+  }
+];
+
+// --- HELPER FORMAT RUPIAH ---
+const formatRupiah = (number) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+};
+
+// --- COMPONENT: BUSINESS DETAIL TABS ---
+const BusinessDetailTabs = ({ biz }) => {
+  const [activeTab, setActiveTab] = useState('concept');
+
+  const tabs = [
+    { id: 'concept', label: 'Ringkasan', icon: <CheckCircle2 className="w-4 h-4" /> },
+    { id: 'economics', label: 'Ekonomi', icon: <PieChart className="w-4 h-4" /> },
+    { id: 'strategy', label: 'Strategi', icon: <Megaphone className="w-4 h-4" /> },
+    { id: 'ops', label: 'Tim & Ops', icon: <Users className="w-4 h-4" /> },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+      {/* Tab Header */}
+      <div className="flex border-b border-gray-100 bg-gray-50 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === tab.id 
+                ? 'text-emerald-600 border-b-2 border-emerald-600 bg-white' 
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="p-5 min-h-[300px]">
+        
+        {/* TAB 1: KONSEP & OFFER */}
+        {activeTab === 'concept' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+              <h4 className="text-emerald-800 font-bold text-sm mb-1 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                The Offer (Nilai Jual)
+              </h4>
+              <p className="text-emerald-900 text-lg font-bold leading-tight">
+                "{biz.offerHighlight}"
+              </p>
+            </div>
+            
+            <div className="space-y-2 text-sm text-gray-600">
+              <p><strong>Deskripsi:</strong> {biz.desc}</p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: UNIT ECONOMICS */}
+        {activeTab === 'economics' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="border rounded-xl overflow-hidden">
+              <div className="bg-gray-100 p-2 text-xs font-bold text-gray-600 text-center uppercase">
+                Simulasi Satuan ({biz.economics.unit})
+              </div>
+              <div className="p-3 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Harga Jual</span>
+                  <span className="font-bold text-gray-800">{biz.economics.price}</span>
+                </div>
+                <div className="flex justify-between text-red-500">
+                  <span>- HPP/Variable Cost</span>
+                  <span>({biz.economics.hpp})</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between text-emerald-600 font-bold bg-emerald-50 -mx-3 px-3 py-2 mt-2">
+                  <span>= Gross Margin</span>
+                  <span>{biz.economics.margin}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                <strong className="text-red-700 block mb-2">Direct Cost (Biaya Langsung)</strong>
+                <ul className="list-disc pl-3 text-gray-600 space-y-1">
+                  {biz.economics.variableCost.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                <strong className="text-orange-700 block mb-2">Fixed Cost (Biaya Tetap)</strong>
+                <ul className="list-disc pl-3 text-gray-600 space-y-1">
+                  {biz.economics.fixedCost.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: MARKETING & STRATEGY */}
+        {activeTab === 'strategy' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+              <h4 className="text-blue-800 font-bold text-sm mb-3 flex items-center gap-2">
+                <Megaphone className="w-4 h-4" />
+                Cara Mendatangkan Pelanggan
+              </h4>
+              <ul className="space-y-2">
+                {biz.marketing.map((tip, idx) => (
+                  <li key={idx} className="flex gap-2 text-sm text-gray-700 items-start">
+                    <span className="bg-blue-200 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5">{idx + 1}</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: OPS & HIRING */}
+        {activeTab === 'ops' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase mb-1">Operasional Harian</h4>
+                <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border-l-4 border-gray-400">
+                  {biz.operations.daily}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-xs font-bold text-emerald-600 uppercase mb-1">Manajemen Uang (Finance)</h4>
+                <div className="bg-emerald-50 p-3 rounded-lg text-sm text-emerald-900 border-l-4 border-emerald-400">
+                  {biz.operations.finance}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-blue-600 uppercase mb-1">Membangun Tim (Hiring)</h4>
+                <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-900 border-l-4 border-blue-400 flex items-start gap-2">
+                  <Users className="w-4 h-4 mt-0.5 shrink-0" />
+                  {biz.operations.hiring}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN COMPONENT ---
+const ShafaqoProposal = () => {
+  const [view, setView] = useState('list');
+  const [selectedCategory, setSelectedCategory] = useState('micro');
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  
+  // Calculator State
+  const [investorShare, setInvestorShare] = useState(30);
+  const [customOmzet, setCustomOmzet] = useState(0);
+
+  useEffect(() => {
+    if (selectedBusiness) {
+      setCustomOmzet(selectedBusiness.omzet);
+      setInvestorShare(30);
+    }
+  }, [selectedBusiness]);
+
+  const profitMargin = 25; 
+  const netProfit = (customOmzet * profitMargin) / 100;
+  const investorCuan = (netProfit * investorShare) / 100;
+  const ownerCuan = netProfit - investorCuan;
+  const roiMonths = selectedBusiness ? (selectedBusiness.modal / investorCuan).toFixed(1) : 0;
+
+  const handleSelectBusiness = (biz) => {
+    setSelectedBusiness(biz);
+    setView('detail');
+  };
+
+  const handleBack = () => {
+    setView('list');
+    setSelectedBusiness(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800 max-w-md mx-auto shadow-2xl overflow-hidden relative border-x border-gray-200">
+      
+      {/* HEADER */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-b-3xl shadow-lg relative z-10">
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Shafaqo</h1>
+            <p className="text-emerald-100 text-sm">Business Proposal & Plan</p>
+          </div>
+          <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+            <ClipboardList className="w-5 h-5 text-white" />
+          </div>
+        </div>
+        
+        {view === 'list' && (
+          <div className="mt-6">
+            <p className="text-sm text-emerald-100 mb-2 font-medium">Pilih Kategori Modal:</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-white text-emerald-700 shadow-md transform scale-105'
+                      : 'bg-emerald-800/30 text-emerald-100 hover:bg-emerald-700/50'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* LIST VIEW */}
+      {view === 'list' && (
+        <div className="p-4 pb-20 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-1 w-1 rounded-full bg-emerald-500"></div>
+            <h2 className="text-gray-500 text-xs uppercase tracking-wider font-bold">
+              Pilihan Bisnis ({businessData.filter(b => b.category === selectedCategory).length})
+            </h2>
+          </div>
+
+          {businessData
+            .filter((b) => b.category === selectedCategory)
+            .map((biz) => (
+              <div 
+                key={biz.id}
+                onClick={() => handleSelectBusiness(biz)}
+                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  {biz.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1">{biz.title}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                      Modal: {formatRupiah(biz.modal)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 line-clamp-1 italic">"{biz.offerHighlight}"</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-300" />
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* DETAIL VIEW */}
+      {view === 'detail' && selectedBusiness && (
+        <div className="animate-in slide-in-from-right duration-300 pb-24">
+          {/* Top Bar Navigation */}
+          <div className="bg-white sticky top-0 px-4 py-3 flex items-center gap-3 border-b border-gray-100 z-20 shadow-sm">
+            <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <span className="font-bold text-gray-800 text-sm truncate">{selectedBusiness.title}</span>
+          </div>
+
+          <div className="p-5">
+            {/* Hero Section */}
+            <div className="text-center mb-6">
+              <div className="inline-block p-4 bg-emerald-50 rounded-full mb-3 shadow-sm border border-emerald-100">
+                {React.cloneElement(selectedBusiness.icon, { className: "w-10 h-10 text-emerald-600" })}
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-1">{selectedBusiness.title}</h2>
+              <p className="text-sm text-emerald-600 font-bold">Modal Awal: {formatRupiah(selectedBusiness.modal)}</p>
+            </div>
+
+            {/* TABBED CONTENT AREA (NEW) */}
+            <BusinessDetailTabs biz={selectedBusiness} />
+
+            {/* CALCULATOR SECTION */}
+            <div className="bg-gray-800 text-white rounded-2xl shadow-lg border border-gray-700 overflow-hidden relative mt-6">
+              <div className="p-4 bg-gray-900 border-b border-gray-700 flex items-center justify-between">
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-emerald-400" />
+                  Kalkulator Profit
+                </h3>
+                <span className="text-[10px] bg-gray-700 px-2 py-1 rounded">Estimasi</span>
+              </div>
+
+              <div className="p-5 space-y-5">
+                {/* Input Slider Omzet */}
+                <div>
+                  <div className="flex justify-between text-xs mb-2 text-gray-400">
+                    <span>Target Omzet/Bulan</span>
+                    <span className="font-bold text-emerald-400">{formatRupiah(customOmzet)}</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min={selectedBusiness.omzet * 0.5} 
+                    max={selectedBusiness.omzet * 2} 
+                    step={100000}
+                    value={customOmzet}
+                    onChange={(e) => setCustomOmzet(Number(e.target.value))}
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  />
+                </div>
+
+                {/* Input Share Investor */}
+                <div>
+                   <div className="flex justify-between text-xs mb-2 text-gray-400">
+                    <span>Bagi Hasil ke Investor</span>
+                    <span className="font-bold text-blue-400">{investorShare}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="60" 
+                    step="5"
+                    value={investorShare}
+                    onChange={(e) => setInvestorShare(Number(e.target.value))}
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+
+                {/* Result Box */}
+                <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600 space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                     <span className="text-gray-400">Total Profit Bersih</span>
+                     <span className="font-bold text-white">{formatRupiah(netProfit)}</span>
+                  </div>
+                  <hr className="border-gray-600"/>
+                  <div className="flex justify-between items-center text-sm pt-1">
+                     <span className="text-blue-300">Investor Terima</span>
+                     <span className="font-bold text-blue-300">{formatRupiah(investorCuan)}/bln</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-gray-500 pt-1">
+                     <span>Balik Modal (ROI)</span>
+                     <span>± {roiMonths} Bulan</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER CTA */}
+      {view === 'detail' && (
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t border-gray-100 z-30">
+          <button className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <Share2 className="w-5 h-5" />
+            Kirim Proposal Ini (WA)
+          </button>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default ShafaqoProposal;
